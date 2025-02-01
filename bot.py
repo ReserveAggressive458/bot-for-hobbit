@@ -31,12 +31,12 @@ youtube = googleapiclient.discovery.build(
 # Constants
 CHANNEL_ID = os.getenv("YOUTUBE_CHANNEL_ID")
 SUBREDDIT = os.getenv("REDDIT_SUBREDDIT")
-WEBHOOK_CALLBACK_URL = os.getenv("WEBHOOK_CALLBACK_URL")  # Replace with your public webhook URL
+WEBHOOK_CALLBACK_URL = os.getenv("WEBHOOK_CALLBACK_URL")  
 PUBSUB_HUB_URL = "https://pubsubhubbub.appspot.com/subscribe"
 
 # Flairs
-FLAIR_NOW_LIVE = os.getenv("FLAIR_LIVE")  # Update with the exact text or ID of the flair
-FLAIR_STREAM_OVER = os.getenv("FLAIR_OVER")  # Update with the exact text or ID of the flair
+FLAIR_NOW_LIVE = os.getenv("FLAIR_LIVE")  
+FLAIR_STREAM_OVER = os.getenv("FLAIR_OVER")  
 
 app = Flask(__name__)
 
@@ -69,9 +69,6 @@ def is_video_live(video_id):
             id=video_id
         )
         response = request.execute()
-
-        # Log the full response for debugging
-        print(f"[Debug] YouTube API response: {response}")
         
         # Extract the relevant details
         items = response.get('items', [])
@@ -101,9 +98,7 @@ def is_video_live(video_id):
             is_live = False
 
         return is_live
-
-    
-        # Return the live status and channel ID
+        # Return the live status
 
     except Exception as e:
         print(f"[Error] Failed to check live status for video ID {video_id}: {e}")
@@ -291,13 +286,9 @@ def search_for_live_stream(channel_id):
     return None, None
 
 def main():
-    # Call this function before anything else in your main script
-    # start_ngrok()
 
     global current_live_video_id, current_sticky_post
     
-    # Start Flask server
-    # threading.Thread(target=start_server, daemon=True).start() - No longer needed due to gunicorn
 
     # Start the scheduler
     print("[Main] Starting scheduler thread...")
