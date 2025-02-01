@@ -113,7 +113,7 @@ def is_video_live(video_id):
 def post_to_reddit(title, video_id):
     global current_sticky_post
     subreddit = reddit.subreddit(SUBREDDIT)
-    
+    title = html.unescape(title)
     post_title_template = os.getenv('POST_TITLE_LIVE')
     expected_post_title = post_title_template.replace("{title}", title)
 
@@ -194,7 +194,7 @@ def youtube_webhook():
             xml_data = ET.fromstring(request.data)
             for entry in xml_data.findall('{http://www.w3.org/2005/Atom}entry'):
                 video_id = entry.find('{http://www.youtube.com/xml/schemas/2015}videoId').text
-                title = html.unescape(entry.find('{http://www.w3.org/2005/Atom}title').text)
+                title = entry.find('{http://www.w3.org/2005/Atom}title').text
                 print(f"Notification received: {title} (Video ID: {video_id})")
 
                 # Check if video is live
