@@ -5,13 +5,15 @@ Environmental variables to set in Heroku (in the Settings section of your app!)
 
 Flair variables must match an existing flair on your subreddit.
 
-For post variables you can include more or less whatever you want. The {title} element will fetch and insert whatever the YouTuber has chosen as the title of their livestream.
+For post variables you can include more or less whatever you want. The {title} element will fetch and insert whatever the YouTuber has chosen as the title of their livestream. Don't delete it.
 
 For the webhook variable you must remember to include "/youtube-webhook" at the end of the URL.
 
 You can check that the bot is working by clicking "more" in the top right side of your Heroku app dashboard and selecting "logs". If you have just started/restarted the bot, there should be logs related to starting the app and a number of printouts about streamcheckers being started and relevant posts being made/confirmed.
 
-IMPORTANT: All "streamer online" posts must include the word "LIVE" (case sensitive), and all offline posts must contain the word "OFFLINE" (case sensitive).
+IMPORTANT: All "streamer online" posts must include the word "LIVE" (case sensitive), and all offline posts must contain the word "OFFLINE" (case sensitive). This is because I'm too lazy to code for flexibiltity. 
+
+For better chances of the bot working, please stick to the formats below. If you prefer a version without "Now OFFLINE!" posts, let me know and I'll make an alternative.
 
 Reddit API/Bot Variables:
 
