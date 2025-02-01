@@ -91,7 +91,7 @@ def post_to_reddit(title, video_id):
                 return
 
     post_title_template = os.getenv('POST_TITLE_LIVE')
-    post_title = post_title_template.replace("{title}", video_title)
+    post_title = post_title_template.replace("{title}", title)
     post_body_template = os.getenv('POST_BODY_LIVE')
     post_body = post_body_template.replace("{video_id}", video_id)
     post = reddit.subreddit(SUBREDDIT).submit(post_title, selftext=post_body)
