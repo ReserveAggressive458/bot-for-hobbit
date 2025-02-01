@@ -10,6 +10,7 @@ import time
 from googleapiclient.discovery import build
 import subprocess
 import os
+import html
 
 
 
@@ -64,14 +65,48 @@ def subscribe_to_youtube():
 def is_video_live(video_id):
     try:
         request = youtube.videos().list(
-            part="liveStreamingDetails",
+            part="liveStreamingDetails, snippet",
             id=video_id
         )
         response = request.execute()
-        details = response.get('items', [])[0].get('liveStreamingDetails', {})
-        return 'concurrentViewers' in details
+
+        # Log the full response for debugging
+        print(f"[Debug] YouTube API response: {response}")
+        
+        # Extract the relevant details
+        items = response.get('items', [])
+        if not items:
+            print(f"[Info] No items found for video ID {video_id}.")
+            return False
+        
+        # Get liveStreamingDetails
+        details = items[0].get('liveStreamingDetails', {})
+        print(f"[Debug] liveStreamingDetails: {details}")
+        
+        # Check snippet for liveBroadcastContent
+        snippet = items[0].get('snippet', {})
+        channel_id = snippet.get('channelId', None)
+        live_broadcast_content = snippet.get('liveBroadcastContent', '')
+
+        # Detect live state
+        is_live = False
+        if live_broadcast_content == 'live':
+            print(f"[Info] Video ID {video_id} is currently live (liveBroadcastContent is 'live').")
+            is_live = True
+        elif details.get('actualStartTime') and not details.get('actualEndTime'):
+            print(f"[Info] Video ID {video_id} appears to be live (actualStartTime present, no actualEndTime).")
+            is_live = True
+        else:
+            print(f"[Info] Video ID {video_id} is not live.")
+            is_live = False
+
+        return is_live
+
+    
+        # Return the live status and channel ID
+
     except Exception as e:
-        print(f"Error checking live status: {e}")
+        print(f"[Error] Failed to check live status for video ID {video_id}: {e}")
         return False
 
 # Post to Reddit when live
@@ -159,7 +194,7 @@ def youtube_webhook():
             xml_data = ET.fromstring(request.data)
             for entry in xml_data.findall('{http://www.w3.org/2005/Atom}entry'):
                 video_id = entry.find('{http://www.youtube.com/xml/schemas/2015}videoId').text
-                title = entry.find('{http://www.w3.org/2005/Atom}title').text
+                title = html.unescape(entry.find('{http://www.w3.org/2005/Atom}title').text)
                 print(f"Notification received: {title} (Video ID: {video_id})")
 
                 # Check if video is live
