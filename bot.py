@@ -126,6 +126,8 @@ def post_to_reddit(title, video_id):
     post_body = post_body_template.replace("{video_id}", video_id)
     post = reddit.subreddit(SUBREDDIT).submit(post_title, selftext=post_body)
     post.mod.sticky()
+    post.mod.suggested_sort('new')
+
 
     # Assign flair
     for flair in subreddit.flair.link_templates:
