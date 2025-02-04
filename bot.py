@@ -220,8 +220,7 @@ def youtube_webhook():
                         print("Stream has ended.")
                         if current_sticky_post:
                             current_sticky_post.mod.sticky(state=False)
-                            current_sticky_post.delete()
-                            print("Deleted live post.")
+                            print("Unstuck defunct live post.")
                         post_offline()
                         current_live_video_id = None
             return '', 204
@@ -238,8 +237,7 @@ def check_stream_status():
             print(f"[Stream Checker] Stream with ID {current_live_video_id} has ended (detected by periodic check).")
             if current_sticky_post:
                 current_sticky_post.mod.sticky(state=False)
-                current_sticky_post.delete()
-                print("[Stream Checker] Deleted live post.")
+                print("[Stream Checker] Unstuck defunct live post.")
             post_offline()
             current_live_video_id = None
 
@@ -315,7 +313,6 @@ def main():
                 else:
                     print("Stream has ended. Cleaning up 'Now Live' post.")
                     post.mod.sticky(state=False)
-                    post.delete()
                     post_offline()
                 break
             elif "OFFLINE" in post.title:
