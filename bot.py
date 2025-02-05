@@ -11,8 +11,98 @@ from googleapiclient.discovery import build
 import subprocess
 import os
 import html
+from bs4 import BeautifulSoup
 
 
+# Post ID for Kick Post
+active_post_id = None
+active_post_timer = None
+
+# URL of the stream you want to monitor
+KICK_URL = os.getenv("KICK_STREAM_URL")
+KICK_INDICATOR = os.getenv("KICK_INDICATOR")  
+
+# Function to check if stream is live
+def kick_stream_status():
+    try:
+        # Fetch the page content
+        response = requests.get(KICK_URL)
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        # Look for the "KICK_INDICATOR" in the HTML
+        if KICK_INDICATOR in soup.text:
+            print("The Kick stream is live!")
+            return True
+        else:
+            print("The Kick stream is not live.")
+            return False
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching page: {e}")
+        return False
+
+# Function to create the live post
+def post_live_on_kick():
+    global active_post_id, active_post_timer
+    subreddit = reddit.subreddit(SUBREDDIT)
+    post_title = os.getenv("KICK_TITLE")
+    post_body = os.getenv("KICK_POST")
+
+    post = reddit.subreddit(SUBREDDIT).submit(post_title, selftext=post_body)
+    post.mod.sticky()
+
+    # Assign flair
+    for flair in subreddit.flair.link_templates:
+        if flair['text'] == os.getenv("FLAIR_STREAM_OVER"):
+            post.flair.select(flair['id'])
+            break
+
+    # Cancel any existing timer before starting a new one
+    if active_post_timer:
+        active_post_timer.cancel()
+
+    # Unstick and delete after 4 hours (14400 seconds)
+    active_post_timer = threading.Timer(14400, unstick_post_anythingelse, args=[post.id])
+    active_post_timer.start()
+    print(f"Posted Kick Stream and scheduled unstick: {post_title}")
+    return post.id
+
+# Function to unstick and delete the post after 4 hours
+def unstick_post_anythingelse(post_id):
+    global active_post_id, active_post_timer
+    try:
+        post = reddit.submission(id=post_id)
+        if not post:
+            print(f"Post with ID {post_id} no longer exists.")
+        else:
+            post.mod.sticky(state=False)
+            post.delete()
+            print(f"Post '{post.title}' unstuck and deleted after 4 hours.")
+        
+    except Exception as e:
+        print(f"Error unsticking or deleting post: {e}")
+    finally:
+        # Clean up global state
+        active_post_id = None
+        active_post_timer = None
+
+# Main loop to monitor the stream status
+def monitor_stream():
+    while True:
+        if active_post_id is None:  # Only check if no post is active
+            is__kick_live = kick_stream_status()
+            
+            # If the stream is live, create a post
+            if is_kick_live:
+                active_post_id = post_live_on_kick()
+                # Wait for 4 hours (14400 seconds) before checking again
+                time.sleep(14400)
+            else:
+                # Wait for 10 minutes (600 seconds) before checking again
+                time.sleep(600)
+        else:
+            # If a post is active, wait for 4 hours to avoid rechecking too soon
+            print("Kick is live. Checking again in 4 hours.")
+            time.sleep(14400)
 
 # Reddit API setup
 reddit = praw.Reddit(
