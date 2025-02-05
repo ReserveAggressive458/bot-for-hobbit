@@ -313,7 +313,6 @@ def main():
                 else:
                     print("Stream has ended. Cleaning up 'Now Live' post.")
                     post.mod.sticky(state=False)
-                    post.delete()
                     post_offline()
                 break
             elif "OFFLINE" in post.title:
