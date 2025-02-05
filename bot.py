@@ -386,7 +386,7 @@ def main():
     scheduler_thread.start()
     # Subscribe to YouTube notifications
     subscribe_to_youtube()
-    monitor__kick_stream()
+    monitor_kick_stream()
     print("Checking for Kick stream")
 
     print("Checking if the stream is already live...")
