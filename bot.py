@@ -90,7 +90,7 @@ def monitor_kick_stream():
     global active_post_id, active_post_timer
     while True:
         if active_post_id is None:  # Only check if no post is active
-            is__kick_live = kick_stream_status()
+            is_kick_live = kick_stream_status()
             
             # If the stream is live, create a post
             if is_kick_live:
