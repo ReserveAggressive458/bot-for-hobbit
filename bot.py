@@ -308,7 +308,7 @@ def main():
                 current_sticky_post = post
                 if video_id:
                     print("Stream is still live. No action needed.")
-                    destiny_live_video_id = video_id
+                    current_live_video_id = video_id
                     start_periodic_check()  # Start periodic checks
                 else:
                     print("Stream has ended. Cleaning up 'Now Live' post.")
@@ -325,7 +325,7 @@ def main():
 
                     # Create a new post for the live stream
                     post_to_reddit(title, video_id)
-                    destiny_live_video_id = video_id
+                    current_live_video_id = video_id
                     start_periodic_check()  # Start periodic checks
                 else:
                     print("No live stream detected at startup, ensuring offline post is up.")
