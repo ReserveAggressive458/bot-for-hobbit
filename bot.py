@@ -86,7 +86,7 @@ def unstick_post_anythingelse(post_id):
         active_post_timer = None
 
 # Main loop to monitor the stream status
-def monitor_stream():
+def monitor_kick_stream():
     while True:
         if active_post_id is None:  # Only check if no post is active
             is__kick_live = kick_stream_status()
@@ -386,6 +386,8 @@ def main():
     scheduler_thread.start()
     # Subscribe to YouTube notifications
     subscribe_to_youtube()
+    monitor__kick_stream()
+    print("Checking for Kick stream")
 
     print("Checking if the stream is already live...")
     video_id, title = search_for_live_stream(CHANNEL_ID)
