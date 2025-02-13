@@ -153,47 +153,49 @@ def subscribe_to_youtube():
         print(f"Failed to subscribe: {response.status_code} - {response.text}")
 
 # Confirm if a video is live
-def is_video_live(video_id):
-    try:
-        request = youtube.videos().list(
-            part="liveStreamingDetails, snippet",
-            id=video_id
-        )
-        response = request.execute()
-        
-        # Extract the relevant details
-        items = response.get('items', [])
-        if not items:
-            print(f"[Info] No items found for video ID {video_id}.")
-            return False
-        
-        # Get liveStreamingDetails
-        details = items[0].get('liveStreamingDetails', {})
-        print(f"[Debug] liveStreamingDetails: {details}")
-        
-        # Check snippet for liveBroadcastContent
-        snippet = items[0].get('snippet', {})
-        channel_id = snippet.get('channelId', None)
-        live_broadcast_content = snippet.get('liveBroadcastContent', '')
+def is_video_live(video_id, max_retries=3, retry_delay=2):
+    for attempt in range(1, max_retries + 1):
+        try:
+            request = youtube.videos().list(
+                part="liveStreamingDetails, snippet",
+                id=video_id
+            )
+            response = request.execute()
+            
+            # Extract the relevant details
+            items = response.get('items', [])
+            if not items:
+                print(f"[Info] No items found for video ID {video_id}.")
+                return False
+            
+            # Get liveStreamingDetails
+            details = items[0].get('liveStreamingDetails', {})
+            print(f"[Debug] liveStreamingDetails: {details}")
+            
+            # Check snippet for liveBroadcastContent
+            snippet = items[0].get('snippet', {})
+            live_broadcast_content = snippet.get('liveBroadcastContent', '')
 
-        # Detect live state
-        is_live = False
-        if live_broadcast_content == 'live':
-            print(f"[Info] Video ID {video_id} is currently live (liveBroadcastContent is 'live').")
-            is_live = True
-        elif details.get('actualStartTime') and not details.get('actualEndTime'):
-            print(f"[Info] Video ID {video_id} appears to be live (actualStartTime present, no actualEndTime).")
-            is_live = True
-        else:
-            print(f"[Info] Video ID {video_id} is not live.")
-            is_live = False
+            # Detect live state
+            if live_broadcast_content == 'live':
+                print(f"[Info] Video ID {video_id} is currently live (liveBroadcastContent is 'live').")
+                return True
+            elif details.get('actualStartTime') and not details.get('actualEndTime'):
+                print(f"[Info] Video ID {video_id} appears to be live (actualStartTime present, no actualEndTime).")
+                return True
+            else:
+                print(f"[Info] Video ID {video_id} is not live.")
+                return False
 
-        return is_live
-        # Return the live status
-
-    except Exception as e:
-        print(f"[Error] Failed to check live status for video ID {video_id}: {e}")
-        return False
+        except Exception as e:
+            print(f"[Error] Attempt {attempt}/{max_retries} - Failed to check live status for video ID {video_id}: {e}")
+            
+            if attempt < max_retries:
+                print(f"[Retry] Retrying in {retry_delay} seconds...")
+                time.sleep(retry_delay)  # Wait before retrying
+            else:
+                print("[Error] Max retries reached. Giving up.")
+                return False  # Return False after max retries
 
 # Post to Reddit when live
 def post_to_reddit(title, video_id):
